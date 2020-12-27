@@ -1,9 +1,9 @@
     
 
 function [Accuracy_SVM_OriginalSeq, Accuracy_kNN_OriginalSeq, ...
-    Accuracy_DT_OriginalSeq, Accuracy_Boosting_OriginalSeq, ...
-    Accuracy_Bagging_OriginalSeq, Accuracy_Subspace_OriginalSeq, ...
-    Accuracy_NN_OriginalSeq, time_record_2] = ...
+    Accuracy_NB_OriginalSeq, Accuracy_DT_OriginalSeq, ...
+    Accuracy_LogitBoost_OriginalSeq, Accuracy_Bagging_OriginalSeq, ...
+    Accuracy_Subspace_OriginalSeq, Accuracy_NN_OriginalSeq, time_record_2] = ...
         OriginalSeqClassification(config, cell_samples, SampleSize, ...
         NumCancerCells, NumNormalCells, data_loaded, Y, species)
 
@@ -68,7 +68,7 @@ for n_iter = length(VariedFeatureLength)
     tic;
     
     % ----------------------------------
-    % k-Nearest Neighbors.
+    % kNN.
     
     kNNModel = fitcknn(X,Y);
     CV_kNNModel = crossval(kNNModel, 'Holdout', 0.3);
@@ -123,7 +123,7 @@ for n_iter = length(VariedFeatureLength)
         'Leaveout', 'on');
     en_leaveout_loss = kfoldLoss(CV_Ensemble_Model);
     
-    Accuracy_Boosting_OriginalSeq(n_iter,:) = [1-en_leaveout_loss;...
+    Accuracy_LogitBoost_OriginalSeq(n_iter,:) = [1-en_leaveout_loss;...
         1-en_kfold_loss]
     
     time_record_2(n_iter,6) = toc;
@@ -131,7 +131,7 @@ for n_iter = length(VariedFeatureLength)
     
     
     % ----------------------------------
-    % Ensemble Method of Bagging.
+    % Ensemble classifier of Bagging.
     
     Ensemble_Model = fitensemble(X,Y,'Bag',50,'Tree',...
         'type','classification');
@@ -181,7 +181,7 @@ for n_iter = length(VariedFeatureLength)
     
         
     % -----------------------------
-    % Feedforward Neural Network.
+    % Feedforward Neural Network
     
     x_source = X.';
     

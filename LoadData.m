@@ -1,6 +1,7 @@
-function [NumCancerCells, NumNormalCells, cell_samples, SampleSize, data_loaded, Y] = ...
+function [NumCancerCells, NumNormalCells, cell_samples, SampleSize, data_loaded, Y, species] = ...
     LoadData(config)
- 
+% Loads the DNA methylation beta value vectors according to config.DATASET, and outputs original sequence and sequence after WHT. 
+
 switch config.DATASET
     case 1
         M = importdata('GSE63384.mat');

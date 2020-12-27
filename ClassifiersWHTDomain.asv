@@ -61,8 +61,9 @@ for n_iter = 1:length(n_vector)
     svm_leaveout_loss = kfoldLoss(CVSVMModel);
     
     
-    Accuracy_SVM(n_iter,:) = [1-svm_leaveout_loss;...
-        1-svm_kfold_loss]
+    Accuracy_SVM(n_iter,:) = [1-svm_holdout_loss;...
+        1-svm_kfold_loss;...
+        1-svm_leaveout_loss];
     
     
     time_record(n_iter,1) = toc;
@@ -81,10 +82,34 @@ for n_iter = 1:length(n_vector)
     CV_kNNModel = crossval(kNNModel, 'Leaveout', 'on');
     knn_leaveout_loss = kfoldLoss(CV_kNNModel);
     
-    Accuracy_kNN(n_iter,:) = [1-knn_leaveout_loss;...
-        1-knn_kfold_loss]
+    Accuracy_kNN(n_iter,:) = [1-knn_holdout_loss;...
+        1-knn_kfold_loss;...
+        1-knn_leaveout_loss];
     
     time_record(n_iter,2) = toc;
+    tic;
+    
+    
+    % ----------------------------------
+    % Naive Bayes Model.
+    % Specify 'Holdout' or 'Kfold' or 'Leaveout'
+    % in function crossval.
+
+    NB_Model = fitcnb(X,Y);
+    CV_NB_Model = crossval(NB_Model,'Holdout',0.3);
+    nb_holdout_loss = kfoldLoss(CV_NB_Model);
+    
+    CV_NB_Model = crossval(NB_Model,'Kfold', 3);
+    nb_kfold_loss = kfoldLoss(CV_NB_Model);
+    
+    CV_NB_Model = crossval(NB_Model,'Leaveout', 'on');
+    nb_leaveout_loss = kfoldLoss(CV_NB_Model);
+    
+    Accuracy_NB(n_iter,:) = [1-nb_holdout_loss;...
+        1-nb_kfold_loss;...
+        1-nb_leaveout_loss];
+    
+    time_record(n_iter,3) = toc;
     tic;
     
     
@@ -101,10 +126,35 @@ for n_iter = 1:length(n_vector)
     CV_DT_Model = crossval(DT_Model,'Leaveout', 'on');
     dt_leaveout_loss = kfoldLoss(CV_DT_Model);
     
-    Accuracy_DT(n_iter,:) = [1-dt_leaveout_loss;...
-        1-dt_kfold_loss]
+    Accuracy_DT(n_iter,:) = [1-dt_holdout_loss;...
+        1-dt_kfold_loss;...
+        1-dt_leaveout_loss];
     
     time_record(n_iter,4) = toc;
+    tic;
+    
+    
+    % ----------------------------------
+    % Ensemble classifier of AdaBoost.
+
+    Ensemble_Model = fitensemble(X,Y,'AdaBoostM1',50,'Tree');
+    CV_Ensemble_Model = crossval(Ensemble_Model,...
+        'Holdout',0.3);
+    en_holdout_loss = kfoldLoss(CV_Ensemble_Model);
+    
+    CV_Ensemble_Model = crossval(Ensemble_Model,...
+        'Kfold', 3);
+    en_kfold_loss = kfoldLoss(CV_Ensemble_Model);
+    
+    CV_Ensemble_Model = crossval(Ensemble_Model,...
+        'Leaveout', 'on');
+    en_leaveout_loss = kfoldLoss(CV_Ensemble_Model);
+    
+    Accuracy_AdaBoost(n_iter,:) = [1-en_holdout_loss;...
+        1-en_kfold_loss;...
+        1-en_leaveout_loss];
+    
+    time_record(n_iter,5) = toc;
     tic;
     
     
@@ -124,8 +174,9 @@ for n_iter = 1:length(n_vector)
         'Leaveout', 'on');
     en_leaveout_loss = kfoldLoss(CV_Ensemble_Model);
     
-    Accuracy_LogitBoost(n_iter,:) = [1-en_leaveout_loss;...
-        1-en_kfold_loss]
+    Accuracy_LogitBoost(n_iter,:) = [1-en_holdout_loss;...
+        1-en_kfold_loss;...
+        1-en_leaveout_loss];
     
     time_record(n_iter,6) = toc;
     tic;
@@ -149,8 +200,9 @@ for n_iter = 1:length(n_vector)
         'Leaveout', 'on');
     bg_leaveout_loss = kfoldLoss(CV_Ensemble_Model);
     
-    Accuracy_Bagging(n_iter,:) = [1-bg_leaveout_loss;...
-        1-bg_kfold_loss]
+    Accuracy_Bagging(n_iter,:) = [1-bg_holdout_loss;...
+        1-bg_kfold_loss;...
+        1-bg_leaveout_loss];
     
     time_record(n_iter,7) = toc;
     tic;
@@ -176,11 +228,42 @@ for n_iter = 1:length(n_vector)
         'Leaveout', 'on');
     bg_leaveout_loss = kfoldLoss(CV_Ensemble_Model);
     
-    Accuracy_Subspace(n_iter,:) = [1-bg_leaveout_loss;...
-        1-bg_kfold_loss]
+    Accuracy_Subspace(n_iter,:) = [1-bg_holdout_loss;...
+        1-bg_kfold_loss;...
+        1-bg_leaveout_loss];
     
     time_record(n_iter,8) = toc;
     tic;
+    
+    
+    % ----------------------------------
+    % Logistic Linear Model.
+    % Tested: loss too high, not applicable.
+    
+    Logistic_LinearModel = fitclinear(X,Y,...
+        'Learner','logistic','Holdout',0.3);
+    logistic_linear_holdout_loss =...
+        kfoldLoss(Logistic_LinearModel);
+    
+    Logistic_LinearModel = fitclinear(X,Y,...
+        'Learner','logistic','Kfold', 3);
+    logistic_linear_kfold_loss =...
+        kfoldLoss(Logistic_LinearModel);
+    
+    Logistic_LinearModel = fitclinear(X,Y,...
+        'Learner','logistic','Leaveout', 'on');
+    logistic_linear_leaveout_loss =...
+        kfoldLoss(Logistic_LinearModel);
+    
+    Accuracy_LinearModel(n_iter,:) = [1-logistic_linear_holdout_loss;...
+        1-logistic_linear_kfold_loss;...
+        1-logistic_linear_leaveout_loss];
+    
+    time_record(n_iter,9) = toc;
+    tic;
+    
+    
+    save all_data.mat;
     
     
     % -----------------------------
@@ -217,5 +300,68 @@ for n_iter = 1:length(n_vector)
     
     time_record(n_iter,10) = toc;
     tic;
+    
+    % ------------------------------
+    % LSTM
+    
+    Y_LSTM = categorical(Y);
+    
+    
+    [NumCases,lengthVector] = size(X);
+    
+    % Set the length of feature space to the
+    % DNA methylation vector.
+    for n2 = 1:NumCases
+        X_LSTM{n2} = X(n2,:)';
+    end
+    
+    
+    % NumLSTMNeuronVector = [10:10:100];
+    NumLSTMNeuronVector = 100;
+    
+    for iter_num_neuron = 1:length(NumLSTMNeuronVector)
         
+        num_lstm = NumLSTMNeuronVector(iter_num_neuron);
+        
+        inputSize = lengthVector;
+        outputSize = num_lstm;
+        
+        outputMode = 'last';
+        numClasses = 2;
+        
+        layers = [ ...
+            sequenceInputLayer(inputSize)
+            lstmLayer(outputSize,'OutputMode',outputMode)
+            fullyConnectedLayer(numClasses)
+            softmaxLayer
+            classificationLayer];
+        
+        maxEpochs = 300;
+        miniBatchSize = 20;
+        options = trainingOptions('sgdm', ...
+            'MaxEpochs',maxEpochs, ...
+            'MiniBatchSize',miniBatchSize);
+        
+        clear net;
+        
+        net = trainNetwork(X_LSTM,Y_LSTM,layers,options);
+        
+        % For complete data training, must run on HPC.
+        % net = trainNetwork(X_PriorWHT_Complete,Y_LSTM,layers,options);
+        
+        clear YPred;
+        
+        miniBatchSize = 20;
+        YPred = classify(net,X_LSTM, ...
+            'MiniBatchSize',miniBatchSize);
+        
+        accuracy = sum(YPred == Y_LSTM)./numel(Y_LSTM);
+        
+        Accuracy_LSTM(n_iter,iter_num_neuron) = accuracy;
+        
+    end
+    
+    time_record(n_iter,11) = toc;
+    
+    
 end
